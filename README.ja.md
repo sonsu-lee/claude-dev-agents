@@ -1,6 +1,6 @@
 # claude-dev-agents
 
-[English](./README.md)
+[English](./README.md) | [한국어](./README.ko.md)
 
 Claude Code の `~/.claude/agents` + `rules` を git で管理し、マシン間同期・チームメンバーへの配布を実現します。
 

@@ -1,6 +1,6 @@
 # claude-dev-agents
 
-[日本語](./README.ja.md)
+[한국어](./README.ko.md) | [日本語](./README.ja.md)
 
 Manage Claude Code `~/.claude/agents` + `rules` via git — sync across machines, share with teammates.
 
