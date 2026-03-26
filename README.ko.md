@@ -8,9 +8,10 @@ Claude Code의 `~/.claude/agents` + `rules`를 git으로 관리하여 머신 간
 
 | 전 | 후 |
 |---|---|
-| agents/rules가 `~/.claude/`에만 존재 | git repo가 원본, `~/.claude/`는 심링크 |
-| 머신 B에 수동 복사 | `git pull` 한 줄로 동기화 |
+| agents/rules가 `~/.claude/`에만 존재 | git repo가 원본, 복사로 설치 |
+| 머신 B에 수동 복사 | `git pull && ./install.sh`로 동기화 |
 | 팀원에게 공유 불가 | `git clone` + `./install.sh` |
+| 다른 AI CLI(Codex 등)와 설정 충돌 | 프로젝트별 설치로 격리 가능 |
 
 ## 레포 구조
 
@@ -33,47 +34,44 @@ claude-dev-agents/
 │   ├── skill-dispatch.md     # 상황별 스킬/에이전트 라우팅 (alwaysApply)
 │   ├── tool-priority.md      # 중복 도구 우선순위 (alwaysApply)
 │   └── code-review.md        # PR 리뷰 체크리스트 (on-demand)
-├── install.sh        # 심링크 생성 스크립트
+├── install.sh        # 복사 기반 설치 스크립트
 └── README.md
 ```
 
-## 셋업 (최초 1회)
+## 셋업
 
-### 이 머신 (원본)
-
-```bash
-git clone git@github.com:sonsu-lee/claude-dev-agents.git
-cd claude-dev-agents
-chmod +x install.sh
-./install.sh
-```
-
-`install.sh` 실행 결과:
-```
-~/.claude/agents → ~/dev/projects/claude-dev-agents/agents  (심링크)
-~/.claude/rules  → ~/dev/projects/claude-dev-agents/rules   (심링크)
-~/.claude/agents.bak  (기존 파일 백업)
-~/.claude/rules.bak   (기존 파일 백업)
-```
-
-### 다른 머신 / 팀원
+### 프로젝트에 설치 (기본)
 
 ```bash
-git clone git@github.com:sonsu-lee/claude-dev-agents.git
-cd claude-dev-agents
-./install.sh
+cd ~/dev/my-app
+~/dev/personal/claude-dev-agents/install.sh
 ```
 
-## 일상 워크플로우
+`agents/`와 `rules/`를 `~/dev/my-app/.claude/`에 복사합니다.
+프로젝트마다 독립 복사본 — Codex 등 다른 AI CLI와 간섭 없음.
+
+### 전역 설치
 
 ```bash
-# 에이전트 수정 후 (어느 머신에서든)
-cd ~/dev/projects/claude-dev-agents
-git add -A && git commit -m "update conductor" && git push
+./install.sh --global
+```
 
-# 다른 머신에서 반영
-cd ~/dev/projects/claude-dev-agents && git pull
-# 심링크라 ~/.claude/agents/, rules/는 자동 반영
+`~/.claude/`에 복사합니다 (모든 프로젝트에 적용).
+
+### 기존 심링크 제거
+
+이전에 심링크 방식으로 설치한 경우:
+
+```bash
+./install.sh --unlink
+```
+
+### 업데이트 반영
+
+```bash
+cd ~/dev/personal/claude-dev-agents && git pull
+
+cd ~/dev/my-app && ~/dev/personal/claude-dev-agents/install.sh  # 프로젝트에 재설치
 ```
 
 ## 에이전트 시스템 아키텍처

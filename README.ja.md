@@ -8,9 +8,10 @@ Claude Code の `~/.claude/agents` + `rules` を git で管理し、マシン間
 
 | 変更前 | 変更後 |
 |---|---|
-| agents/rules が `~/.claude/` にのみ存在 | git リポジトリがソースオブトゥルース、`~/.claude/` はシンボリックリンク |
-| 別マシンへ手動コピー | `git pull` 一発で同期 |
+| agents/rules が `~/.claude/` にのみ存在 | git リポジトリがソースオブトゥルース、コピーでインストール |
+| 別マシンへ手動コピー | `git pull && ./install.sh` で同期 |
 | チームメンバーと共有不可 | `git clone` + `./install.sh` |
+| 他のAI CLI（Codex等）と設定が競合 | プロジェクト単位でインストールし分離可能 |
 
 ## リポジトリ構成
 
@@ -33,47 +34,44 @@ claude-dev-agents/
 │   ├── skill-dispatch.md     # コンテキスト別スキル/エージェントルーティング (alwaysApply)
 │   ├── tool-priority.md      # 重複ツール優先順位 (alwaysApply)
 │   └── code-review.md        # PRレビューチェックリスト (オンデマンド)
-├── install.sh        # シンボリックリンク作成スクリプト
+├── install.sh        # コピーベースのインストールスクリプト
 └── README.md
 ```
 
-## セットアップ（初回のみ）
+## セットアップ
 
-### このマシン（オリジン）
-
-```bash
-git clone git@github.com:sonsu-lee/claude-dev-agents.git
-cd claude-dev-agents
-chmod +x install.sh
-./install.sh
-```
-
-`install.sh` 実行結果：
-```
-~/.claude/agents → ~/dev/projects/claude-dev-agents/agents  (シンボリックリンク)
-~/.claude/rules  → ~/dev/projects/claude-dev-agents/rules   (シンボリックリンク)
-~/.claude/agents.bak  (既存ファイルのバックアップ)
-~/.claude/rules.bak   (既存ファイルのバックアップ)
-```
-
-### 別マシン / チームメンバー
+### プロジェクトにインストール（デフォルト）
 
 ```bash
-git clone git@github.com:sonsu-lee/claude-dev-agents.git
-cd claude-dev-agents
-./install.sh
+cd ~/dev/my-app
+~/dev/personal/claude-dev-agents/install.sh
 ```
 
-## 日常ワークフロー
+`agents/` と `rules/` を `~/dev/my-app/.claude/` にコピーします。
+プロジェクトごとに独立コピー — Codex等の他のAI CLIとの干渉なし。
+
+### グローバルインストール
 
 ```bash
-# エージェント修正後（どのマシンからでも）
-cd ~/dev/projects/claude-dev-agents
-git add -A && git commit -m "update conductor" && git push
+./install.sh --global
+```
 
-# 別マシンで反映
-cd ~/dev/projects/claude-dev-agents && git pull
-# シンボリックリンクのため ~/.claude/agents/、rules/ は自動反映
+`~/.claude/` にコピーします（全プロジェクトに適用）。
+
+### 既存シンボリックリンクの削除
+
+以前のシンボリックリンク方式でインストールした場合：
+
+```bash
+./install.sh --unlink
+```
+
+### 更新の反映
+
+```bash
+cd ~/dev/personal/claude-dev-agents && git pull
+
+cd ~/dev/my-app && ~/dev/personal/claude-dev-agents/install.sh  # プロジェクトに再インストール
 ```
 
 ## エージェントシステムアーキテクチャ

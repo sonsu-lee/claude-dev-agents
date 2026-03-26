@@ -8,9 +8,10 @@ Manage Claude Code `~/.claude/agents` + `rules` via git — sync across machines
 
 | Before | After |
 |---|---|
-| agents/rules live only in `~/.claude/` | Git repo is the source of truth; `~/.claude/` is symlinked |
-| Manual copy to another machine | `git pull` to sync |
+| agents/rules live only in `~/.claude/` | Git repo is the source of truth; installed via copy |
+| Manual copy to another machine | `git pull && ./install.sh` to sync |
 | No way to share with teammates | `git clone` + `./install.sh` |
+| Same config leaks into other AI CLIs | Project-level install keeps configs isolated |
 
 ## Repo Structure
 
@@ -33,47 +34,44 @@ claude-dev-agents/
 │   ├── skill-dispatch.md     # Context-based skill/agent routing (alwaysApply)
 │   ├── tool-priority.md      # Duplicate tool priority (alwaysApply)
 │   └── code-review.md        # PR review checklist (on-demand)
-├── install.sh        # Symlink setup script
+├── install.sh        # Copy-based install script
 └── README.md
 ```
 
-## Setup (One-Time)
+## Setup
 
-### This Machine (Origin)
-
-```bash
-git clone git@github.com:sonsu-lee/claude-dev-agents.git
-cd claude-dev-agents
-chmod +x install.sh
-./install.sh
-```
-
-After `install.sh`:
-```
-~/.claude/agents → ~/dev/projects/claude-dev-agents/agents  (symlink)
-~/.claude/rules  → ~/dev/projects/claude-dev-agents/rules   (symlink)
-~/.claude/agents.bak  (existing files backed up)
-~/.claude/rules.bak   (existing files backed up)
-```
-
-### Another Machine / Teammates
+### Install to a Project (default)
 
 ```bash
-git clone git@github.com:sonsu-lee/claude-dev-agents.git
-cd claude-dev-agents
-./install.sh
+cd ~/dev/my-app
+~/dev/personal/claude-dev-agents/install.sh
 ```
 
-## Daily Workflow
+Copies `agents/` and `rules/` into `~/dev/my-app/.claude/`.
+Each project gets its own copy — no interference with Codex or other AI CLIs.
+
+### Install Globally
 
 ```bash
-# After editing agents (on any machine)
-cd ~/dev/projects/claude-dev-agents
-git add -A && git commit -m "update conductor" && git push
+./install.sh --global
+```
 
-# Sync on another machine
-cd ~/dev/projects/claude-dev-agents && git pull
-# Symlinks mean ~/.claude/agents/ and rules/ update automatically
+Copies into `~/.claude/` (applies to all projects).
+
+### Remove Old Symlinks
+
+If you previously used the symlink-based install:
+
+```bash
+./install.sh --unlink
+```
+
+### Sync After Updates
+
+```bash
+cd ~/dev/personal/claude-dev-agents && git pull
+
+cd ~/dev/my-app && ~/dev/personal/claude-dev-agents/install.sh  # re-copy to project
 ```
 
 ## Agent System Architecture
